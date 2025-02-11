@@ -1,37 +1,51 @@
 package org.example.project
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
 
-import weatherreport.composeapp.generated.resources.Res
-import weatherreport.composeapp.generated.resources.compose_multiplatform
+import screens.*
+import utilities.*
+
+enum class Screen {
+    CREATION, LOGIN, HOMEPAGE
+}
 
 @Composable
-@Preview
 fun App() {
-    MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
-        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
-            }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
+    var currentScreen: Screen by remember { mutableStateOf(Screen.CREATION) }
+    var user: String? by remember { mutableStateOf(null) }
+
+    when (currentScreen) {
+        Screen.CREATION -> AccountCreationScreen(
+            onRegister = { username: String, email: String, password: String ->
+                // this is for testing purposes only
+                // passwords will not be printed out
+                println("Created user: Username=$username, Email=$email, Password=$password")
+                user = username
+                currentScreen = Screen.HOMEPAGE
+            },
+            onSwitchToLogin = { currentScreen = Screen.LOGIN }
+        )
+        Screen.LOGIN -> LoginScreen(
+            onLogin = { identifier: String, password: Any? ->
+                // once again, testing purposes only
+                // passwords will not be printed out
+                if (isEmail(identifier)) {
+                    println("Logged in with an email: Email=$identifier, Password=$password")
+                } else {
+                    println("Logged in with a username: Username=$identifier, Password=$password")
                 }
+                user = identifier
+                currentScreen = Screen.HOMEPAGE
+            },
+            onSwitchToRegister = { currentScreen = Screen.CREATION }
+        )
+        Screen.HOMEPAGE -> HomeScreen(
+            user = user,
+            onLogout = {
+                println("Logged out")
+                user = null
+                currentScreen = Screen.LOGIN
             }
-        }
+        )
     }
 }
