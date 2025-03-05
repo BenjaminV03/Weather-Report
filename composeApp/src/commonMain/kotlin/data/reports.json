@@ -1,0 +1,14 @@
+[
+  {
+    "postID": 1,
+    "user": "weatherLover123",
+    "content": "I sure love weather",
+    "tags": ["SQL", "weather", "query"]
+  },
+  {
+    "postID": 2,
+    "user": "stormChaser42",
+    "content": "Look at all that weather",
+    "tags": ["SQL", "average", "weather"]
+  }
+]

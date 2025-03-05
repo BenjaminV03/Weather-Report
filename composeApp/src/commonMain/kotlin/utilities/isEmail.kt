@@ -3,6 +3,9 @@
 
 package utilities
 
+import androidx.*
+
 fun isEmail(input: String): Boolean {
-    return android.util.Patterns.EMAIL_ADDRESS.matcher(input).matches()
+    val emailRegex = "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+$"
+    return Regex(emailRegex).matches(input)
 }

@@ -11,6 +11,18 @@ plugins {
     alias(libs.plugins.composeCompiler)
 }
 
+dependencies {
+    debugImplementation(compose.uiTooling)
+    implementation(libs.okio)
+}
+
+repositories {
+    mavenCentral()
+    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
+    gradlePluginPortal()
+    google() // if using Android dependencies
+}
+
 kotlin {
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
@@ -94,9 +106,5 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
-}
-
-dependencies {
-    debugImplementation(compose.uiTooling)
 }
 
