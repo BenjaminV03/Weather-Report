@@ -4,4 +4,7 @@ local.properties
 build/
 .kotlin/
 .idea/
-.fleet
+.fleet/
+gradlew
+gradlew.bat
+kotlin-js-store/
