@@ -4,6 +4,9 @@ import androidx.compose.runtime.*
 
 import screens.*
 import utilities.*
+import components.classes.*
+import components.FileReport.FileReportRepository
+import co.touchlab.kermit.Logger
 
 enum class Screen {
     CREATION, LOGIN, HOMEPAGE
@@ -13,7 +16,11 @@ enum class Screen {
 fun App() {
     var currentScreen: Screen by remember { mutableStateOf(Screen.CREATION) }
     var user: String? by remember { mutableStateOf(null) }
+    val FRRepository = FileReportRepository()
+    val reportList = FRRepository.getReports("local")
+    val logger = Logger.withTag("App")
 
+    logger.i {"Composite App Lauched"}
     when (currentScreen) {
         Screen.CREATION -> AccountCreationScreen(
             onRegister = { username: String, email: String, password: String ->
@@ -45,7 +52,9 @@ fun App() {
                 println("Logged out")
                 user = null
                 currentScreen = Screen.LOGIN
-            }
+            },
+            reports = reportList
+
         )
     }
 }

@@ -14,6 +14,10 @@ androidx-test-junit = "1.2.1"
 compose-multiplatform = "1.7.0"
 junit = "4.13.2"
 kotlin = "2.1.0"
+ktorClientCore = "2.x.x"
+ktorClientCoreVersion = "2.3.4"
+ktorClientOkhttp = "2.3.4"
+ktorSerializationKotlinxJson = "2.3.4"
 okio = "3.10.2"
 okioMultiplatform = "3.5.0"
 okioVersion = "3.5.0"
@@ -31,6 +35,15 @@ androidx-constraintlayout = { group = "androidx.constraintlayout", name = "const
 androidx-activity-compose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 androidx-lifecycle-viewmodel = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel", version.ref = "androidx-lifecycle" }
 androidx-lifecycle-runtime-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
+ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktorClientCore" }
+ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktorClientCore" }
+ktor-client-core-v234 = { module = "io.ktor:ktor-client-core", version.ref = "ktorClientCoreVersion" }
+ktor-client-js = { module = "io.ktor:ktor-client-js", version.ref = "ktorClientCore" }
+ktor-client-ios = { module = "io.ktor:ktor-client-ios", version.ref = "ktorClientCore" }
+ktor-client-okhttp = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktorClientCore" }
+ktor-client-okhttp-v234 = { module = "io.ktor:ktor-client-okhttp", version.ref = "ktorClientOkhttp" }
+ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorClientCore" }
+ktor-serialization-kotlinx-json-v234 = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktorSerializationKotlinxJson" }
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 okio-multiplatform = { module = "com.squareup.okio:okio-multiplatform", version.ref = "okioMultiplatform" }
 okio-v350 = { module = "com.squareup.okio:okio", version.ref = "okioVersion" }

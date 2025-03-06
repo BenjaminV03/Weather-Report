@@ -9,8 +9,8 @@ interface ReportRepository {
     fun getGroups(): List<Group>
 
     // grab all reports of a specific group
-    fun getReports(group: Group): List<Report>
+    fun getReports(group: String): List<Report>
 
     // add a report to the database or file
-    fun addReport(reportName: String, post: Report)
+    fun addReport(author: String, content: String, group: String, date: String)
 }

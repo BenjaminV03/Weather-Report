@@ -9,16 +9,21 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
+    kotlin("plugin.serialization") version "1.9.10"
+    id("com.google.gms.google-services") version "4.4.2" apply false
+
 }
 
 dependencies {
     debugImplementation(compose.uiTooling)
     implementation(libs.okio)
+    implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
+    implementation("com.google.firebase:firebase-analytics")
+
 }
 
 repositories {
     mavenCentral()
-    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     gradlePluginPortal()
     google() // if using Android dependencies
 }
@@ -27,7 +32,7 @@ kotlin {
     androidTarget {
         @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
-            jvmTarget.set(JvmTarget.JVM_11)
+            jvmTarget.set(JvmTarget.JVM_17)
         }
     }
     
@@ -42,6 +47,7 @@ kotlin {
         }
     }
     
+/*
     @OptIn(ExperimentalWasmDsl::class)
     wasmJs {
         moduleName = "composeApp"
@@ -61,13 +67,9 @@ kotlin {
         }
         binaries.executable()
     }
-    
+ */
+
     sourceSets {
-        
-        androidMain.dependencies {
-            implementation(compose.preview)
-            implementation(libs.androidx.activity.compose)
-        }
         commonMain.dependencies {
             implementation(compose.runtime)
             implementation(compose.foundation)
@@ -77,6 +79,21 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodel)
             implementation(libs.androidx.lifecycle.runtime.compose)
+            implementation("io.ktor:ktor-client-core:2.3.4")
+            implementation("io.ktor:ktor-client-content-negotiation:2.3.4")
+            implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.4")
+            implementation("com.squareup.okio:okio:3.10.2")
+            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
+            implementation("co.touchlab:kermit:2.0.0")
+            implementation("mysql:mysql-connector-java:8.0.33")
+
+        }
+        androidMain.dependencies {
+            implementation(compose.preview)
+            implementation(libs.androidx.activity.compose)
+            implementation("io.ktor:ktor-client-okhttp:2.3.4")
+
+
         }
     }
 }
@@ -103,8 +120,8 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 

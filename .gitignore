@@ -5,6 +5,4 @@ build/
 .kotlin/
 .idea/
 .fleet/
-gradlew
-gradlew.bat
 kotlin-js-store/
