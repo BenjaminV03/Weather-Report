@@ -1,12 +1,21 @@
 package org.example.project
 
 import androidx.compose.runtime.*
+import androidx.compose.material.*
+import androidx.compose.foundation.layout.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import com.russhwolf.settings.Settings
+import io.ktor.client.*
+import io.ktor.client.request.*
+import io.ktor.utils.io.errors.*
 
 import screens.*
-import utilities.*
-import components.classes.*
-import components.FileReport.FileReportRepository
-import co.touchlab.kermit.Logger
+import components.*
+import httpRequests.*
 
 enum class Screen {
     CREATION, LOGIN, HOMEPAGE
@@ -16,45 +25,89 @@ enum class Screen {
 fun App() {
     var currentScreen: Screen by remember { mutableStateOf(Screen.CREATION) }
     var user: String? by remember { mutableStateOf(null) }
-    val FRRepository = FileReportRepository()
-    val reportList = FRRepository.getReports("local")
-    val logger = Logger.withTag("App")
+    var reportList by remember { mutableStateOf<List<Report>>(emptyList()) }
+    var isDataFetched by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val settings = Settings()
+    val client = getClient() // from httpRequests
+    val coroutineScope = rememberCoroutineScope()
 
-    logger.i {"Composite App Lauched"}
+    fun fetchData() {
+        if (!isDataFetched) {
+            coroutineScope.launch {
+                try {
+                    val fetchedReports = getAllReports(client)
+                    withContext(Dispatchers.Main) {
+                        reportList = fetchedReports
+                        println("Fetched reports: $fetchedReports")
+                        isDataFetched = true
+                        errorMessage = null
+                    }
+                } catch (e: IOException) {
+                    withContext(Dispatchers.Main) {
+                        errorMessage = "Network error: ${e.message}"
+                    }
+                } catch (e: Exception) {
+                    withContext(Dispatchers.Main) {
+                        errorMessage = "Error fetching reports: ${e.message}"
+                    }
+                }
+            }
+        }
+    }
+
     when (currentScreen) {
         Screen.CREATION -> AccountCreationScreen(
-            onRegister = { username: String, email: String, password: String ->
-                // this is for testing purposes only
-                // passwords will not be printed out
-                println("Created user: Username=$username, Email=$email, Password=$password")
+            client = client,
+            onRegister = {username: String ->
                 user = username
                 currentScreen = Screen.HOMEPAGE
             },
-            onSwitchToLogin = { currentScreen = Screen.LOGIN }
+            onSwitchToLogin = { currentScreen = Screen.LOGIN },
         )
         Screen.LOGIN -> LoginScreen(
-            onLogin = { identifier: String, password: Any? ->
-                // once again, testing purposes only
-                // passwords will not be printed out
-                if (isEmail(identifier)) {
-                    println("Logged in with an email: Email=$identifier, Password=$password")
-                } else {
-                    println("Logged in with a username: Username=$identifier, Password=$password")
-                }
+            client = client,
+            onLogin = {identifier: String ->
                 user = identifier
                 currentScreen = Screen.HOMEPAGE
             },
             onSwitchToRegister = { currentScreen = Screen.CREATION }
         )
-        Screen.HOMEPAGE -> HomeScreen(
-            user = user,
-            onLogout = {
-                println("Logged out")
-                user = null
-                currentScreen = Screen.LOGIN
-            },
-            reports = reportList
-
-        )
+        Screen.HOMEPAGE -> {
+            if (!isDataFetched) {
+                fetchData()
+            }
+            if (errorMessage != null) {
+                Text(errorMessage!!)
+            } else if (!isDataFetched) {
+                LoadingScreen()
+            } else {
+                HomeScreen(
+                    user = user,
+                    onLogout = {
+                        println("Logged out")
+                        user = null
+                        settings.remove("authToken")
+                        reportList = emptyList()
+                        isDataFetched = false
+                        currentScreen = Screen.LOGIN
+                    },
+                    reports = reportList
+                )
+            }
+        }
     }
 }
+
+
+@Composable
+fun LoadingScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center
+    ) {
+        CircularProgressIndicator()
+    }
+}
+
+

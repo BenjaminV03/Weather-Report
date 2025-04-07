@@ -1,56 +1,84 @@
 package screens
 
-import androidx.compose.foundation.layout.*
-import androidx.compose.material.*
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.runtime.*
+import androidx.compose.material.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import components.FormField
-
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import io.ktor.client.*
+import io.ktor.client.request.*
+import io.ktor.client.statement.*
+import io.ktor.http.*
+import com.russhwolf.settings.Settings
+import httpRequests.*
 
 @Composable
-fun AccountCreationScreen(onRegister: (String, String, String) -> Unit, onSwitchToLogin: () -> Unit) {
-    var username: String by remember { mutableStateOf("") }
-    var email: String by remember { mutableStateOf("") }
-    var password: String by remember { mutableStateOf("") }
+fun AccountCreationScreen(
+    client : HttpClient,
+    onRegister: (String) -> Unit,
+    onSwitchToLogin: () -> Unit,
+) {
+    var username by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    var email by remember { mutableStateOf("") }
+    var message by remember { mutableStateOf("") }
+
+    val coroutineScope = rememberCoroutineScope()
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Text("Create Account")
-
-        Spacer(Modifier.height(16.dp))
-
-        FormField(
-            value = username, onValueChange = { username = it },
-            label = "Username"
+        TextField(
+            value = username,
+            onValueChange = { username = it },
+            label = { Text("Username") }
         )
-        FormField(
-            value = email, onValueChange = { email = it },
-            label = "Email"
+        TextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Password") },
+            visualTransformation = PasswordVisualTransformation()
         )
-        FormField(
-            value = password, onValueChange = { password = it },
-            label = "Password",
-            isPassword = true
+        TextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") }
         )
-
-        // there is currently no check on the password, will add later on
-
-        Spacer(Modifier.height(16.dp))
-
-        Button(onClick = { onRegister(username, email, password) }) {
+        Button(onClick = {
+            coroutineScope.launch {
+                withContext(Dispatchers.Default) {
+                    val response = registerUser(client, username, password, email)
+                    if (response == HttpStatusCode.OK) {
+                        onRegister(username)
+                    } else {
+                        message = "Registration failed"
+                        println(response)
+                    }
+                }
+            }
+        }) {
             Text("Register")
         }
-
-        Spacer(Modifier.height(8.dp))
-
         TextButton(onClick = onSwitchToLogin) {
-            Text("Already have an account? Log in")
+            Text("Already have an account? Login")
+        }
+        if (message.isNotEmpty()) {
+            Snackbar {
+                Text(message)
+            }
         }
     }
 }
 
+
+data class RegisterRequest(val username: String, val password: String, val email: String)

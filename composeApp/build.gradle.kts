@@ -10,16 +10,12 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     kotlin("plugin.serialization") version "1.9.10"
-    id("com.google.gms.google-services") version "4.4.2" apply false
 
 }
 
 dependencies {
     debugImplementation(compose.uiTooling)
     implementation(libs.okio)
-    implementation(platform("com.google.firebase:firebase-bom:33.10.0"))
-    implementation("com.google.firebase:firebase-analytics")
-
 }
 
 repositories {
@@ -82,10 +78,13 @@ kotlin {
             implementation("io.ktor:ktor-client-core:2.3.4")
             implementation("io.ktor:ktor-client-content-negotiation:2.3.4")
             implementation("io.ktor:ktor-serialization-kotlinx-json:2.3.4")
-            implementation("com.squareup.okio:okio:3.10.2")
-            implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
-            implementation("co.touchlab:kermit:2.0.0")
+            implementation("io.ktor:ktor-client-cio:2.3.4") // CIO engine for HTTP requests
+            implementation("io.ktor:ktor-serialization-gson:2.3.4") // For JSON serialization
             implementation("mysql:mysql-connector-java:8.0.33")
+            implementation("com.google.code.gson:gson:2.12.1")
+            implementation("com.russhwolf:multiplatform-settings:1.0.0")
+            implementation("com.russhwolf:multiplatform-settings-no-arg:1.0.0")
+            
 
         }
         androidMain.dependencies {

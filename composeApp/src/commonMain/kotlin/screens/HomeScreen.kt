@@ -1,7 +1,7 @@
 // This will be the main homepage/dashboard that a user will see upon logging in
 package screens
 
-import components.classes.*
+import components.Report
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -14,7 +14,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun HomeScreen(user: String?, onLogout: () -> Unit, reports: List<Report>) {
+fun HomeScreen(
+    user: String?,
+    onLogout: () -> Unit,
+    reports: List<Report>
+){
     println("Reports passed to HomeScreen: $reports")
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(16.dp),
