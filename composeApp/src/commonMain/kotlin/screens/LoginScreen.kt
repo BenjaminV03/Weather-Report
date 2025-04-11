@@ -22,7 +22,8 @@ import components.FormField
 fun LoginScreen(
     client: HttpClient,
     onLogin: (String) -> Unit,
-    onSwitchToRegister: () -> Unit
+    onSwitchToRegister: () -> Unit,
+    onSwitchToDebug: () -> Unit
 ) {
     // this can be username or email
     var identifier by remember { mutableStateOf("") }
@@ -49,6 +50,9 @@ fun LoginScreen(
 
         Button(onClick = {
             CoroutineScope(Dispatchers.IO).launch {
+                if (identifier == "debug" || password == "debug") {
+                    onSwitchToDebug()
+                }
                 val response = loginUser(client, identifier, password)
                 when (response) {
                     HttpStatusCode.OK -> {

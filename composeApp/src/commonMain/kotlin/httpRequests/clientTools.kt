@@ -7,6 +7,8 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import com.russhwolf.settings.Settings
 
+var baseurl = "http://10.0.0.79:8080"
+
 // creates the client to the web service
 fun getClient(): HttpClient {
     val client = HttpClient(CIO) {
@@ -27,3 +29,5 @@ fun getAuthToken(): String? {
     val settings = Settings()
     return settings.getStringOrNull("authToken")
 }
+
+fun changeBaseUrl(url: String) { baseurl = url }

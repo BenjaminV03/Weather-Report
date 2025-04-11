@@ -5,6 +5,7 @@ import androidx.compose.material.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -16,7 +17,7 @@ import components.*
 import httpRequests.*
 
 enum class Screen {
-    CREATION, LOGIN, HOMEPAGE
+    CREATION, LOGIN, HOMEPAGE, DEBUG
 }
 
 @Composable
@@ -27,7 +28,8 @@ fun App() {
     var isDataFetched by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val settings = Settings()
-    val client = getClient() // from httpRequests
+    val client = getClient() //
+
     val coroutineScope = rememberCoroutineScope()
 
     fun fetchData() {
@@ -69,7 +71,8 @@ fun App() {
                 user = identifier
                 currentScreen = Screen.HOMEPAGE
             },
-            onSwitchToRegister = { currentScreen = Screen.CREATION }
+            onSwitchToRegister = { currentScreen = Screen.CREATION },
+            onSwitchToDebug = { currentScreen = Screen.DEBUG }
         )
         Screen.HOMEPAGE -> {
             if (!isDataFetched) {
@@ -94,6 +97,13 @@ fun App() {
                 )
             }
         }
+        Screen.DEBUG -> DebugScreen(
+            currentBaseUrl = baseurl,
+            onBaseUrlChange = { newBaseUrl ->
+                changeBaseUrl(newBaseUrl)
+            },
+            onBack = { currentScreen = Screen.LOGIN }
+        )
     }
 }
 
@@ -109,3 +119,37 @@ fun LoadingScreen() {
 }
 
 
+@Composable
+fun DebugScreen(
+    currentBaseUrl: String,
+    onBaseUrlChange: (String) -> Unit,
+    onBack: () -> Unit
+) {
+    var newBaseUrl by remember { mutableStateOf(currentBaseUrl) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text("Debug Screen", style = MaterialTheme.typography.h5)
+        Spacer(modifier = Modifier.height(16.dp))
+        Text("Current Base URL: $currentBaseUrl")
+        Spacer(modifier = Modifier.height(16.dp))
+        OutlinedTextField(
+            value = newBaseUrl,
+            onValueChange = { newBaseUrl = it },
+            label = { Text("New Base URL") }
+        )
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = { onBaseUrlChange(newBaseUrl) }) {
+            Text("Update Base URL")
+        }
+        Spacer(modifier = Modifier.height(16.dp))
+        Button(onClick = onBack) {
+            Text("Back")
+        }
+    }
+}

@@ -9,8 +9,6 @@ import io.ktor.http.*
 import com.russhwolf.settings.Settings
 import kotlinx.serialization.Serializable
 
-var baseurl = "http://10.0.0.79:8080"
-
 // these functions are used to communicate auth requests to the spring backend
 
 // login request
