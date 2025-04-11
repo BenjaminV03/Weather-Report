@@ -11,12 +11,6 @@ import io.ktor.client.*
 
 // these functions are used to access report data from the web servive via requsets handled by spring
 
-// grabs the clients token if it exists
-fun getAuthToken(): String? {
-    val settings = Settings()
-    return settings.getStringOrNull("authToken")
-}
-
 // create a report
 suspend fun postReport(client: HttpClient, report: Report){
 

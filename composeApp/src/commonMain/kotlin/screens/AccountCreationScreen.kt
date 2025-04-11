@@ -1,24 +1,23 @@
 package screens
 
+import utilities.isEmail
+
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.runtime.*
-import androidx.compose.material.*
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
+import httpRequests.registerUser
+import io.ktor.client.*
+import io.ktor.http.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
-import io.ktor.http.*
-import com.russhwolf.settings.Settings
-import httpRequests.*
 
 @Composable
 fun AccountCreationScreen(
@@ -32,6 +31,29 @@ fun AccountCreationScreen(
     var message by remember { mutableStateOf("") }
 
     val coroutineScope = rememberCoroutineScope()
+
+    fun validateInput(): Boolean {
+        // Username Rules: At least 5 characters excluding special characters
+        if (username.length < 5 || !username.matches(Regex("^[A-Za-z0-9_]*$"))) {
+            message = "Username must be atleast 5 characters long and contain only letters, numbers, and underscores"
+            return false
+        }
+
+        // More password rules will be added
+        // Password Rules: 8-20 characters excluding spaces
+        if (password.length < 8 || password.length > 20 || password.contains(" ")) {
+            message = "Password must be 8-20 characters long"
+            return false
+        }
+
+        // Check if the email is valid
+        if (isEmail(email).not()) {
+            message = "Invalid email address"
+            return false
+        }
+
+        return true
+    }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(16.dp),
@@ -57,6 +79,7 @@ fun AccountCreationScreen(
         Button(onClick = {
             coroutineScope.launch {
                 withContext(Dispatchers.Default) {
+                    if (!validateInput()) return@withContext // Validation failed
                     val response = registerUser(client, username, password, email)
                     if (response == HttpStatusCode.OK) {
                         onRegister(username)
@@ -79,6 +102,3 @@ fun AccountCreationScreen(
         }
     }
 }
-
-
-data class RegisterRequest(val username: String, val password: String, val email: String)

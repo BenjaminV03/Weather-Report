@@ -21,7 +21,7 @@ enum class Screen {
 
 @Composable
 fun App() {
-    var currentScreen: Screen by remember { mutableStateOf(Screen.CREATION) }
+    var currentScreen: Screen by remember { mutableStateOf(Screen.LOGIN) }
     var user: String? by remember { mutableStateOf(null) }
     var reportList by remember { mutableStateOf<List<Report>>(emptyList()) }
     var isDataFetched by remember { mutableStateOf(false) }

@@ -1,4 +1,8 @@
 package screens
+import httpRequests.loginUser
+import httpRequests.findUserByEmail
+import utilities.isEmail
+import components.User
 
 import androidx.compose.runtime.*
 import androidx.compose.material.*
@@ -7,17 +11,12 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import io.ktor.client.*
-import io.ktor.client.request.*
-import io.ktor.client.statement.*
 import io.ktor.http.*
-import com.russhwolf.settings.Settings
 import androidx.compose.foundation.layout.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import components.FormField
-import kotlinx.coroutines.IO
-import httpRequests.*
 
 @Composable
 fun LoginScreen(
@@ -51,10 +50,22 @@ fun LoginScreen(
         Button(onClick = {
             CoroutineScope(Dispatchers.IO).launch {
                 val response = loginUser(client, identifier, password)
-                if (response == HttpStatusCode.OK) {
-                    onLogin(identifier)
-                } else {
-                    errorMessage = response.toString()
+                when (response) {
+                    HttpStatusCode.OK -> {
+                        if (!isEmail(identifier)) {
+                            onLogin(identifier) // its a username
+                        } else { // its an email
+                            val user = findUserByEmail(client, identifier)
+                            onLogin(user.name)
+                        }
+
+                    }
+                    HttpStatusCode.Forbidden -> {
+                        errorMessage = "Invalid username or password"
+                    }
+                    else -> {
+                        errorMessage = "Failed to login"
+                    }
                 }
             }
         }) {

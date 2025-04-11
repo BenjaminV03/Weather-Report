@@ -1,4 +1,6 @@
 package httpRequests
+import utilities.isEmail
+
 
 import io.ktor.client.*
 import io.ktor.client.request.*
@@ -14,11 +16,23 @@ var baseurl = "http://10.0.2.2:8080"
 // login request
 suspend fun loginUser(client: HttpClient, identifier: String, password: String): HttpStatusCode {
     try {
+        val authRequest: AuthRequest
+        // Send the login request to the server
+        if (isEmail(identifier)) { // email was entered
+            authRequest = AuthRequest(
+                password = password,
+                email = identifier
+            )
+        } else{ // username was entered
+            authRequest = AuthRequest(
+                username = identifier,
+                password = password
+            )
+        }
         val response: HttpResponse = client.post("$baseurl/api/auth/login") {
             contentType(ContentType.Application.Json)
-            setBody(AuthRequest(identifier, password, ""))
+            setBody(authRequest)
         }
-        println(response)
         if (response.status == HttpStatusCode.OK) {
             val authToken = response.bodyAsText() // Assuming the token is returned as plain text
             // Save the token securely (e.g., in shared preferences)
@@ -54,7 +68,7 @@ suspend fun registerUser(client: HttpClient, username: String, password: String,
 
 @Serializable
 data class AuthRequest(
-    val username: String,
+    val username: String? = null,
     val password: String,
-    val email: String
+    val email: String? = null
 )

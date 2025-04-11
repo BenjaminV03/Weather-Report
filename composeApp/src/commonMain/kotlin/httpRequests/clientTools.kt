@@ -5,6 +5,7 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
+import com.russhwolf.settings.Settings
 
 // creates the client to the web service
 fun getClient(): HttpClient {
@@ -19,4 +20,10 @@ fun getClient(): HttpClient {
     }
 
     return client
+}
+
+// grabs the clients token if it exists
+fun getAuthToken(): String? {
+    val settings = Settings()
+    return settings.getStringOrNull("authToken")
 }
