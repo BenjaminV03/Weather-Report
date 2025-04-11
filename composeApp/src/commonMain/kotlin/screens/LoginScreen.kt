@@ -53,10 +53,14 @@ fun LoginScreen(
                 when (response) {
                     HttpStatusCode.OK -> {
                         if (!isEmail(identifier)) {
+                            println("Loggin in with username")
                             onLogin(identifier) // its a username
                         } else { // its an email
                             val user = findUserByEmail(client, identifier)
-                            onLogin(user.name)
+                            println(response)
+                            println("Loggin in with email")
+                            println(user)
+                            onLogin(user.username)
                         }
 
                     }

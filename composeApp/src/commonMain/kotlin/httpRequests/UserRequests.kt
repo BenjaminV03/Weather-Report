@@ -11,7 +11,7 @@ import io.ktor.client.*
 
 // find user by email
 suspend fun findUserByEmail(client: HttpClient, email : String): User {
-    val user: User = client.get("$baseurl/api/user/email/$email"){
+    val user: User = client.get("$baseurl/api/users/email/$email"){
         accept(ContentType.Application.Json)
         header("Authorization", "Bearer ${getAuthToken()}")
     }.body()

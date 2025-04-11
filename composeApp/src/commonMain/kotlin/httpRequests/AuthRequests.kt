@@ -9,22 +9,21 @@ import io.ktor.http.*
 import com.russhwolf.settings.Settings
 import kotlinx.serialization.Serializable
 
-var baseurl = "http://10.0.2.2:8080"
+var baseurl = "http://10.0.0.79:8080"
 
 // these functions are used to communicate auth requests to the spring backend
 
 // login request
 suspend fun loginUser(client: HttpClient, identifier: String, password: String): HttpStatusCode {
     try {
-        val authRequest: AuthRequest
         // Send the login request to the server
-        if (isEmail(identifier)) { // email was entered
-            authRequest = AuthRequest(
+        val authRequest: AuthRequest = if (isEmail(identifier)) { // email was entered
+            AuthRequest(
                 password = password,
                 email = identifier
             )
         } else{ // username was entered
-            authRequest = AuthRequest(
+            AuthRequest(
                 username = identifier,
                 password = password
             )
