@@ -9,8 +9,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import com.russhwolf.settings.Settings
-import io.ktor.client.*
-import io.ktor.client.request.*
 import io.ktor.utils.io.errors.*
 
 import screens.*
@@ -92,7 +90,7 @@ fun App() {
                         isDataFetched = false
                         currentScreen = Screen.LOGIN
                     },
-                    reports = reportList
+                    client = client
                 )
             }
         }

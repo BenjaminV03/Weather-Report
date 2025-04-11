@@ -1,4 +1,5 @@
 [versions]
+activityCompose = "1.7.2"
 agp = "8.5.2"
 android-compileSdk = "34"
 android-minSdk = "24"
@@ -21,8 +22,10 @@ ktorSerializationKotlinxJson = "2.3.4"
 okio = "3.10.2"
 okioMultiplatform = "3.5.0"
 okioVersion = "3.5.0"
+material3Android = "1.3.1"
 
 [libraries]
+androidx-activity-compose-v172 = { module = "androidx.activity:activity-compose", version.ref = "activityCompose" }
 kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
 kotlin-test-junit = { module = "org.jetbrains.kotlin:kotlin-test-junit", version.ref = "kotlin" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
@@ -47,6 +50,7 @@ ktor-serialization-kotlinx-json-v234 = { module = "io.ktor:ktor-serialization-ko
 okio = { module = "com.squareup.okio:okio", version.ref = "okio" }
 okio-multiplatform = { module = "com.squareup.okio:okio-multiplatform", version.ref = "okioMultiplatform" }
 okio-v350 = { module = "com.squareup.okio:okio", version.ref = "okioVersion" }
+androidx-material3-android = { group = "androidx.compose.material3", name = "material3-android", version.ref = "material3Android" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

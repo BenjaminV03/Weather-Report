@@ -14,6 +14,7 @@ plugins {
 }
 
 dependencies {
+    implementation(libs.androidx.material3.android)
     debugImplementation(compose.uiTooling)
     implementation(libs.okio)
 }
@@ -31,39 +32,6 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_17)
         }
     }
-    
-    listOf(
-        iosX64(),
-        iosArm64(),
-        iosSimulatorArm64()
-    ).forEach { iosTarget ->
-        iosTarget.binaries.framework {
-            baseName = "ComposeApp"
-            isStatic = true
-        }
-    }
-    
-/*
-    @OptIn(ExperimentalWasmDsl::class)
-    wasmJs {
-        moduleName = "composeApp"
-        browser {
-            val rootDirPath = project.rootDir.path
-            val projectDirPath = project.projectDir.path
-            commonWebpackConfig {
-                outputFileName = "composeApp.js"
-                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
-                    static = (static ?: mutableListOf()).apply {
-                        // Serve sources to debug inside browser
-                        add(rootDirPath)
-                        add(projectDirPath)
-                    }
-                }
-            }
-        }
-        binaries.executable()
-    }
- */
 
     sourceSets {
         commonMain.dependencies {
@@ -84,6 +52,12 @@ kotlin {
             implementation("com.google.code.gson:gson:2.12.1")
             implementation("com.russhwolf:multiplatform-settings:1.0.0")
             implementation("com.russhwolf:multiplatform-settings-no-arg:1.0.0")
+            implementation("androidx.compose.ui:ui:1.7.8")
+            implementation("androidx.compose.material:material:1.7.8")
+            implementation("androidx.compose.ui:ui-tooling-preview:1.7.8")
+            implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+            implementation("com.google.accompanist:accompanist-swiperefresh:0.36.0")
+
             
 
         }

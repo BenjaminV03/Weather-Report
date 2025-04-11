@@ -5,7 +5,6 @@ Main collaborators:
   Team Leader: Colby Farmer
   Lead Programmer: Benjamin Vipperman
   Software Engineer: Chaison Vang
-  Security Manager: Holden Marshall
 
 
   
