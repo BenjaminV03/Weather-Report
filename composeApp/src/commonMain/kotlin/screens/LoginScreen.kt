@@ -72,6 +72,7 @@ fun LoginScreen(
                         errorMessage = "Invalid username or password"
                     }
                     else -> {
+                        println(response)
                         errorMessage = "Failed to login"
                     }
                 }
@@ -81,6 +82,7 @@ fun LoginScreen(
         }
 
         Spacer(Modifier.height(16.dp))
+        
 
         TextButton(onClick = onSwitchToRegister) {
             Text("Don't have an account? Register")
