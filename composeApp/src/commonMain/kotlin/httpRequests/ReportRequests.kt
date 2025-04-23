@@ -12,6 +12,7 @@ import io.ktor.http.*
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.io.File
+import java.util.*
 
 // these functions are used to access report data from the web servive via requsets handled by spring
 
@@ -57,27 +58,20 @@ suspend fun postReport(client: HttpClient, report: Report, files: List<File>) {
 }
 
 // grab a file from the server
-suspend fun fetchFile(client: HttpClient, reportId: Long, fileName: String): ByteArray {
+suspend fun fetchFile(client: HttpClient, reportId: UUID, fileName: String): ByteArray {
+    println("File being grabbed")
     return client.get("$baseurl/api/reports/$reportId/files/$fileName") {
         header("Authorization", "Bearer ${getAuthToken()}")
     }.body()
 }
 
-suspend fun fetchFileNames(client: HttpClient, reportId: Long): List<String> {
+suspend fun fetchFileNames(client: HttpClient, reportId: UUID): List<String> {
+    println("File Names being grabbed")
     return client.get("$baseurl/api/reports/$reportId/files"){
         header("Authorization", "Bearer ${getAuthToken()}")
     }.body()
 }
 
-// grab a report by id
-suspend fun getReportById(client: HttpClient, id: Long): Report {
-
-    val report: Report = client.get("$baseurl/api/reports/$id"){
-        accept(ContentType.Application.Json)
-        header("Authorization", "Bearer ${getAuthToken()}")
-    }.body()
-    return report
-}
 // grab a report by group
 suspend fun getReportByGroup(client: HttpClient, groupName: String): List<Report> {
 
@@ -110,7 +104,7 @@ suspend fun updateReport(client: HttpClient, report: Report) {
 }
 
 // delete a report
-suspend fun deleteReport(client: HttpClient, id: Long?) {
+suspend fun deleteReport(client: HttpClient, id: UUID?) {
     client.delete("$baseurl/api/reports/$id"){
         header("Authorization", "Bearer ${getAuthToken()}")
     }.body<HttpResponse>().let { response ->
@@ -131,5 +125,3 @@ suspend fun getAllReports(client: HttpClient): List<Report> {
         header("Authorization", "Bearer ${getAuthToken()}")
     }.body()
 }
-
-//

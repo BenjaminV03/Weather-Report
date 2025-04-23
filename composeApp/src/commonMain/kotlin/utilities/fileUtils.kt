@@ -69,6 +69,22 @@ suspend fun loadImageBitmapFromUri(context: Context, uri: Uri): ImageBitmap? = w
     }
 }
 
+// Helper function to load a video thumbnail from a Uri
+fun loadVideoThumbnailFromUri(context: Context, uri: Uri): ImageBitmap? {
+    return try {
+        val retriever = android.media.MediaMetadataRetriever()
+        retriever.setDataSource(context, uri)
+        val bitmap = retriever.frameAtTime // Get the first frame as a thumbnail
+        retriever.release()
+        bitmap?.asImageBitmap()
+    } catch (e: Exception) {
+        println("Error loading video thumbnail: ${e.message}")
+        null
+    }
+}
+
+
+
 // Helper function to check if a file type is supported
 fun isSupportedFileType(file: File): Boolean {
     val extension = file.extension.lowercase()

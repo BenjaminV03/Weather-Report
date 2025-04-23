@@ -40,6 +40,7 @@ import androidx.media3.ui.PlayerView
 import io.ktor.client.*
 import kotlinx.coroutines.launch
 import java.io.File
+import java.util.*
 
 enum class TabType {
     Local,
@@ -47,7 +48,11 @@ enum class TabType {
     National
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
+
+val imageCache = mutableStateMapOf<String, ImageBitmap>() // Cache for images
+val videoCache = mutableStateMapOf<String, Uri>() // Cache for videos
+
+
 @Composable
 fun HomeScreen(
     user: String?,
@@ -57,6 +62,7 @@ fun HomeScreen(
     var reports by remember { mutableStateOf(emptyList<Report>()) }
     var selectedTab by remember { mutableStateOf(TabType.Local) }
     val cachedReports = remember { mutableStateMapOf<TabType, List<Report>>() }
+
     var isOverlayVisible by remember { mutableStateOf(false) } // State to control overlay visibility
     val coroutineScope = rememberCoroutineScope()
 
@@ -266,12 +272,11 @@ fun AddReportOverlay(
                             if (content.isNotBlank()) {
                                 // Create a new report with media attachments
                                 val newReport = Report(
-                                    author = user.toString(),
-                                    content = content,
-                                    groupName = "local",
-                                    // created date is autmomatically set by the server when the report is created
+                                    id = null, // Set the ID to null since the server will generate one
                                 )
-
+                                newReport.author = user.toString() // Set the author of the report
+                                newReport.content = content // Set the content of the report
+                                newReport.groupName = "local" // Set the group name of the report
 
                                 coroutineScope.launch {
                                     try {
@@ -336,7 +341,11 @@ fun FilePicker(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             items(selectedUris) { uri ->
-                ImagePreview(uri = uri, context = context)
+                if (isVideoFile(uri.toString())) {
+                    VideoPreview(uri = uri, context = context)
+                } else {
+                    ImagePreview(uri = uri, context = context)
+                }
             }
         }
     }
@@ -370,6 +379,35 @@ fun ImagePreview(uri: Uri, context: Context) {
         }
     }
 }
+
+@Composable
+fun VideoPreview(uri: Uri, context: Context) {
+    val videoThumbnail by produceState<ImageBitmap?>(initialValue = null, uri) {
+        value = loadVideoThumbnailFromUri(context, uri) // Call the suspend function
+    }
+
+    if (videoThumbnail != null) {
+        Image(
+            bitmap = videoThumbnail!!,
+            contentDescription = "Video Thumbnail",
+            modifier = Modifier
+                .size(100.dp) // Set the size of the preview
+                .clip(MaterialTheme.shapes.small) // Rounded
+                .border(1.dp, Color.Gray) // Add border
+        )
+    } else {
+        Box(
+            modifier = Modifier
+                .size(100.dp)
+                .background(Color.LightGray)
+                .border(1.dp, Color.Gray),
+            contentAlignment = Alignment.Center
+        ) {
+            Text("Thumbnail Unavailable", style = MaterialTheme.typography.caption)
+        }
+    }
+}
+
 
 @Composable // Display saved reports for the selected tab
 fun LocalTabContent(client: HttpClient, localReports: List<Report>, user: String?, onDeleteReport: (Report) -> Unit){
@@ -508,17 +546,26 @@ fun Reports(client: HttpClient, report: Report, user: String?, onDeleteReport: (
 
 
 @Composable
-fun ImageAttachment(client: HttpClient, reportId: Long, fileName: String) {
+fun ImageAttachment(client: HttpClient, reportId: UUID, fileName: String) {
     val coroutineScope = rememberCoroutineScope()
     var imageBitmap by remember { mutableStateOf<ImageBitmap?>(null) }
 
     LaunchedEffect(fileName) {
         coroutineScope.launch {
-            try {
-                val fileData = fetchFile(client, reportId, fileName)
-                imageBitmap = BitmapFactory.decodeByteArray(fileData, 0, fileData.size)?.asImageBitmap()
-            } catch (e: Exception) {
-                println("Error loading image: ${e.message}")
+            if (imageCache.containsKey(fileName)) {
+                // Use cached image
+                imageBitmap = imageCache[fileName]
+            } else {
+                try {
+                    val fileData = fetchFile(client, reportId, fileName)
+                    val bitmap = BitmapFactory.decodeByteArray(fileData, 0, fileData.size)?.asImageBitmap()
+                    if (bitmap != null) {
+                        imageCache[fileName] = bitmap // Cache the image
+                        imageBitmap = bitmap
+                    }
+                } catch (e: Exception) {
+                    println("Error loading image: ${e.message}")
+                }
             }
         }
     }
@@ -549,22 +596,29 @@ fun ImageAttachment(client: HttpClient, reportId: Long, fileName: String) {
 
 
 
+
 @Composable
-fun VideoAttachment(client: HttpClient, reportId: Long, fileName: String) {
+fun VideoAttachment(client: HttpClient, reportId: UUID, fileName: String) {
     val context = LocalContext.current
     val coroutineScope = rememberCoroutineScope()
     var videoUri by remember { mutableStateOf<Uri?>(null) }
 
     LaunchedEffect(fileName) {
         coroutineScope.launch {
-            try {
-                // videos need to have avalid URI so they need a temp file to be used as a placeholder
-                val fileData = fetchFile(client, reportId, fileName)
-                val tempFile = File(context.cacheDir, fileName)
-                tempFile.writeBytes(fileData)
-                videoUri = Uri.fromFile(tempFile)
-            } catch (e: Exception) {
-                println("Error loading video: ${e.message}")
+            if (videoCache.containsKey(fileName)) {
+                // Use cached video URI
+                videoUri = videoCache[fileName]
+            } else {
+                try {
+                    val fileData = fetchFile(client, reportId, fileName)
+                    val tempFile = File(context.cacheDir, fileName)
+                    tempFile.writeBytes(fileData)
+                    val uri = Uri.fromFile(tempFile)
+                    videoCache[fileName] = uri // Cache the video URI
+                    videoUri = uri
+                } catch (e: Exception) {
+                    println("Error loading video: ${e.message}")
+                }
             }
         }
     }
@@ -609,3 +663,4 @@ fun VideoAttachment(client: HttpClient, reportId: Long, fileName: String) {
         }
     }
 }
+
