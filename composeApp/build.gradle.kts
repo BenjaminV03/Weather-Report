@@ -58,7 +58,6 @@ kotlin {
             implementation("androidx.media3:media3-ui:1.4.1")
             implementation("androidx.media3:media3-exoplayer:1.4.1")
             implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
-            implementation("com.google.accompanist:accompanist-swiperefresh:0.36.0")
         }
         androidMain.dependencies {
             implementation(compose.preview)

@@ -1,4 +1,4 @@
-package utilities
+package screens.homeScreenComposables.utilities
 
 import android.content.Context
 import android.graphics.BitmapFactory

@@ -2,7 +2,6 @@ package screens
 import httpRequests.loginUser
 import httpRequests.findUserByEmail
 import utilities.isEmail
-import components.User
 
 import androidx.compose.runtime.*
 import androidx.compose.material.*
@@ -53,8 +52,7 @@ fun LoginScreen(
                 if (identifier == "debug" || password == "debug") {
                     onSwitchToDebug()
                 }
-                val response = loginUser(client, identifier, password)
-                when (response) {
+                when (val response = loginUser(client, identifier, password)) {
                     HttpStatusCode.OK -> {
                         if (!isEmail(identifier)) {
                             println("Loggin in with username")
