@@ -7,7 +7,7 @@ import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
 import com.russhwolf.settings.Settings
 
-var baseurl = "http://10.0.0.100:8080"
+var baseurl = "http://10.0.0.79:8080"
 
 // creates the client to the web service
 fun getClient(): HttpClient {

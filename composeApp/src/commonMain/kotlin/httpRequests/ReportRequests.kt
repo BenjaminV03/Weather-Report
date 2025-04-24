@@ -1,7 +1,7 @@
 package httpRequests
 
 import components.Report
-import utilities.getMimeType
+import screens.homeScreenComposables.utilities.getMimeType
 
 import io.ktor.client.*
 import io.ktor.client.call.*
