@@ -26,11 +26,39 @@ fun App() {
     var user: String? by remember { mutableStateOf(null) }
     var reportList by remember { mutableStateOf<List<Report>>(emptyList()) }
     var isDataFetched by remember { mutableStateOf(false) }
+    var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val settings = Settings()
-    val client = getClient() //
+    val client = getClient()
 
     val coroutineScope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        isLoading = true
+        println("Starting application")
+        val isValidToken = validateToken(client)
+        if (isValidToken) {
+            println("Valid token. Welcome Back")
+            val userInfo = extractUserInfo(client)
+            if (userInfo != null) {
+                user = userInfo.username
+                println(user)
+                currentScreen = Screen.HOMEPAGE
+            } else {
+                println("Invalid or no token")
+                settings.remove("authToken") // Clear invalid token
+                currentScreen = Screen.LOGIN
+            }
+
+            isLoading = false
+        } else {
+            println("No valid token")
+            currentScreen = Screen.LOGIN
+            isLoading = false
+        }
+    }
+
+
 
     fun fetchData() {
         if (!isDataFetched) {
@@ -55,6 +83,13 @@ fun App() {
             }
         }
     }
+
+    if (isLoading) {
+        // show loading screen
+        LoadingScreen()
+        return
+    }
+
 
     when (currentScreen) {
         Screen.CREATION -> AccountCreationScreen(

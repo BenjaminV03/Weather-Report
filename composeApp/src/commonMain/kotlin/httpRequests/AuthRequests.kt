@@ -7,12 +7,14 @@ import io.ktor.client.request.*
 import io.ktor.client.statement.*
 import io.ktor.http.*
 import com.russhwolf.settings.Settings
+import io.ktor.client.call.*
 import kotlinx.serialization.Serializable
 
 // these functions are used to communicate auth requests to the spring backend
 
 // login request
 suspend fun loginUser(client: HttpClient, identifier: String, password: String): HttpStatusCode {
+    println("Login request: $identifier")
     try {
         // Send the login request to the server
         val authRequest: AuthRequest = if (isEmail(identifier)) { // email was entered
@@ -63,9 +65,60 @@ suspend fun registerUser(client: HttpClient, username: String, password: String,
     }
 }
 
+// validate token
+suspend fun validateToken(client: HttpClient): Boolean {
+    val token = Settings().getStringOrNull("authToken") ?: return false
+    println("Validating token...")
+    return try {
+        val response: HttpResponse = client.post("$baseurl/api/auth/verify-token") {
+            header("Authorization", "Bearer $token")
+        }
+        println("Token validation successful: ${response.status}")
+        response.status == HttpStatusCode.OK
+    } catch (e: Exception) {
+        println("Token validation failed: ${e.message}")
+        false
+    }
+}
+
+// extract user information from token
+suspend fun extractUserInfo(client: HttpClient): UserInfoResponse? {
+    println("Extracting user info...")
+    val token = Settings().getStringOrNull("authToken") ?: return null
+    println("Token: $token")
+    return try {
+        val response: HttpResponse = client.post("$baseurl/api/auth/extract-user-info") {
+            header("Authorization", "Bearer $token")
+        }
+        println(response)
+        if (response.status == HttpStatusCode.OK) {
+            // Parse the response body as a map
+            val userInfo = response.body<UserInfoResponse>()
+            println("Extracted user info: $userInfo")
+            userInfo
+        } else {
+            println("Failed to extract user info: ${response.status.description}")
+            null
+        }
+    } catch (e: Exception) {
+        println("Failed to extract user info: ${e.message}")
+        null
+    }
+}
+
+
+
+
+
 @Serializable
 data class AuthRequest(
     val username: String? = null,
     val password: String,
     val email: String? = null
+)
+
+@Serializable
+data class UserInfoResponse(
+    val username: String,
+    val roles: List<String>
 )

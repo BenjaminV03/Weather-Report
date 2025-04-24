@@ -10,7 +10,6 @@ plugins {
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
     kotlin("plugin.serialization") version "1.9.10"
-
 }
 
 dependencies {
@@ -55,18 +54,16 @@ kotlin {
             implementation("androidx.compose.ui:ui:1.7.8")
             implementation("androidx.compose.material:material:1.7.8")
             implementation("androidx.compose.ui:ui-tooling-preview:1.7.8")
+            implementation("androidx.compose.material3:material3:1.2.0-alpha10")
+            implementation("androidx.media3:media3-ui:1.4.1")
+            implementation("androidx.media3:media3-exoplayer:1.4.1")
             implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
             implementation("com.google.accompanist:accompanist-swiperefresh:0.36.0")
-
-            
-
         }
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
             implementation("io.ktor:ktor-client-okhttp:2.3.4")
-
-
         }
     }
 }
@@ -97,4 +94,3 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 }
-
