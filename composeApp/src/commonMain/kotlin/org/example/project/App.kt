@@ -42,7 +42,6 @@ fun App() {
             val userInfo = extractUserInfo(client)
             if (userInfo != null) {
                 user = userInfo.username
-                println(user)
                 currentScreen = Screen.HOMEPAGE
             } else {
                 println("Invalid or no token")
