@@ -1,7 +1,7 @@
 package screens
 import httpRequests.loginUser
 import httpRequests.findUserByEmail
-import utilities.isEmail
+import utilities.validateEmail
 
 import androidx.compose.runtime.*
 import androidx.compose.material.*
@@ -54,7 +54,7 @@ fun LoginScreen(
                 }
                 when (val response = loginUser(client, identifier, password)) {
                     HttpStatusCode.OK -> {
-                        if (!isEmail(identifier)) {
+                        if (!validateEmail(identifier)) {
                             println("Loggin in with username")
                             onLogin(identifier) // its a username
                         } else { // its an email

@@ -10,6 +10,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -75,8 +76,12 @@ fun FilePicker(
             items(selectedUris) { uri ->
                 val fileName = getFileName(context, uri) ?: "Unknown"
                 when {
-                    isVideoFile(fileName) -> VideoPreview(uri = uri, context = context)
-                    isImageFile(fileName) -> ImagePreview(uri = uri, context = context)
+                    isVideoFile(fileName) -> VideoPreview(uri = uri, context = context, onRemove ={
+                        selectedUris = selectedUris - uri
+                    })
+                    isImageFile(fileName) -> ImagePreview(uri = uri, context = context, onRemove ={
+                        selectedUris = selectedUris - uri
+                    })
                     else -> {
                         Box(
                             modifier = Modifier
@@ -97,7 +102,11 @@ fun FilePicker(
 
 // Composable function to preview the images and videos selected by the user
 @Composable
-fun ImagePreview(uri: Uri, context: Context) {
+fun ImagePreview(
+    uri: Uri,
+    context: Context,
+    onRemove: () -> Unit
+) {
     val imageBitmap by produceState<ImageBitmap?>(initialValue = null, uri) {
         value = loadImageBitmapFromUri(context, uri) // Call the suspend function
     }
@@ -122,11 +131,27 @@ fun ImagePreview(uri: Uri, context: Context) {
             Text("Preview Unavailable", style = MaterialTheme.typography.caption)
         }
     }
+
+    // Add a red "X" button to remove the image
+    Box(
+        modifier = Modifier
+            .size(20.dp)
+            .background(Color.Red, shape = MaterialTheme.shapes.small)
+            .padding(4.dp)
+            .clickable { onRemove() },
+        contentAlignment = Alignment.TopEnd
+    ) {
+        Text("X", color = Color.White, style = MaterialTheme.typography.caption)
+    }
 }
 
 
 @Composable
-fun VideoPreview(uri: Uri, context: Context) {
+fun VideoPreview(
+    uri: Uri,
+    context: Context,
+    onRemove: () -> Unit
+) {
     val videoThumbnail by produceState<ImageBitmap?>(initialValue = null, uri) {
         value = loadVideoThumbnailFromUri(context, uri) // Call function to load thumbnail
     }
@@ -150,5 +175,17 @@ fun VideoPreview(uri: Uri, context: Context) {
         ) {
             Text("Thumbnail Unavailable", style = MaterialTheme.typography.caption)
         }
+    }
+
+    // Add a red "X" button to remove the video
+    Box(
+        modifier = Modifier
+            .size(20.dp)
+            .background(Color.Red, shape = MaterialTheme.shapes.small)
+            .padding(4.dp)
+            .clickable { onRemove() },
+        contentAlignment = Alignment.TopEnd
+    ) {
+        Text("X", color = Color.White, style = MaterialTheme.typography.caption)
     }
 }

@@ -10,8 +10,8 @@ import java.util.TimeZone
 
 fun parseIsoDate(dateString: String?): Date? {
     return try {
-        val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.US)
-        isoFormat.timeZone = TimeZone.getTimeZone("UTC")
+        val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSSSS", Locale.US)
+        isoFormat.timeZone = TimeZone.getTimeZone("EST")
         isoFormat.parse(dateString.toString())
     } catch (e: Exception) {
         println("Error parsing date: ${e.message}")
@@ -29,5 +29,7 @@ fun formatDateTime(date: Date?): String? {
 fun isWithinLastMinutes(date: Date?, minutes: Long): Boolean {
     val currentTime = System.currentTimeMillis()
     val duration = currentTime - (date?.time ?: 0)
+    println("Current time: $currentTime")
+    println("Duration: $duration")
     return duration <= minutes * 60 * 1000
 }

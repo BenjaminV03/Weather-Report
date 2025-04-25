@@ -1,9 +1,5 @@
 package screens.homeScreenComposables
 
-import components.Report
-import screens.homeScreenComposables.utilities.*
-import screens.homeScreenComposables.components.*
-
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -12,9 +8,14 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import components.Report
 import httpRequests.fetchFileNames
+import httpRequests.updateReport
 import io.ktor.client.*
 import kotlinx.coroutines.launch
+import screens.homeScreenComposables.components.ImageAttachment
+import screens.homeScreenComposables.components.VideoAttachment
+import screens.homeScreenComposables.utilities.*
 
 @Composable
 fun Reports(
@@ -25,6 +26,7 @@ fun Reports(
 ){
     var showDialog by remember { mutableStateOf(false) } // State to control dialog visibility
     var showMenu by remember { mutableStateOf(false) } // State to control menu visibility
+    var showEditOverlay by remember { mutableStateOf(false) } // State to control edit overlay visibility
     var fileNames by remember { mutableStateOf<List<String>>(emptyList()) } // List of file names
     val coroutineScope = rememberCoroutineScope()
     val createdDateTimeISO = parseIsoDate(report.createdDate)
@@ -110,7 +112,7 @@ fun Reports(
                                     // Handle edit action
                                     showMenu = false
                                     println("Edit action triggered for report: ${report.id}")
-                                    // Add your edit logic here
+                                    showEditOverlay = true
                                 }) {
                                     Text("Edit")
                                 }
@@ -151,6 +153,26 @@ fun Reports(
                     Text("No")
                 }
             }
+        )
+    }
+
+
+    // Edit overlay
+    if (showEditOverlay) {
+        EditReportOverlay(
+            report = report,
+            onDismiss = { showEditOverlay = false },
+            onEditReport = { updatedReport ->
+                // Handle the updated report
+                coroutineScope.launch {
+                    try {
+                        updateReport(client, updatedReport)
+                        showEditOverlay = false
+                    } catch (e: Exception) {
+                        println("Error updating report: ${e.message}")
+                    }
+                }
+            },
         )
     }
 }

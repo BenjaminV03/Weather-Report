@@ -5,7 +5,7 @@ import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ExitToApp
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.runtime.*
@@ -16,9 +16,12 @@ import screens.homeScreenComposables.*
 import httpRequests.getReportByGroup
 import httpRequests.deleteReport
 import components.Report
+import components.User
+import httpRequests.findUserByUsername
 import kotlinx.coroutines.launch
 import io.ktor.client.HttpClient
 import screens.homeScreenComposables.BottomNavigationBar
+
 
 enum class TabType {
     Local,
@@ -42,7 +45,9 @@ fun HomeScreen(
     val cachedReports = remember { mutableStateMapOf<TabType, List<Report>>() }
 
     var isOverlayVisible by remember { mutableStateOf(false) } // State to control overlay visibility
+    var isInfoTabVisible by remember { mutableStateOf(false) } // State to control info tab visibility
     val coroutineScope = rememberCoroutineScope()
+    var userInfo by remember { mutableStateOf<User?>(null) }
 
     // Function to refresh reports for the selected tab
     val refreshReports: () -> Unit = {
@@ -70,6 +75,17 @@ fun HomeScreen(
                 refreshReports() // Refresh reports after deletion
             } catch (e: Exception) {
                 println("Error deleting report: ${e.message}")
+            }
+        }
+    }
+
+
+    LaunchedEffect(isInfoTabVisible) {
+        if (user != null) {
+            try {
+                userInfo = findUserByUsername(client, user)
+            } catch (e: Exception) {
+                println("Error fetching user info: ${e.message}")
             }
         }
     }
@@ -103,13 +119,13 @@ fun HomeScreen(
             Scaffold(
                 topBar = {
                     TopAppBar(
-                        title = { Text("Weather Report - $user") },
+                        title = { Text("Weather Report") },
                         actions = {
                             IconButton(onClick = refreshReports) { // Add a refresh button
                                 Icon(Icons.Outlined.Refresh, contentDescription = "Refresh")
                             }
-                            IconButton(onClick = onLogout) {
-                                Icon(Icons.AutoMirrored.Filled.ExitToApp, contentDescription = "Logout")
+                            IconButton(onClick = { isInfoTabVisible = !isInfoTabVisible }) {
+                                Icon(Icons.Default.Settings, contentDescription = "User Information")
                             }
                         }
                     )
@@ -156,6 +172,18 @@ fun HomeScreen(
                     user = user,
                     client = client
                 )
+            }
+
+            // Popout tab for user information
+            if (isInfoTabVisible) {
+                userInfo?.let {
+                    UserInfoTab(
+                        user = it,
+                        onLogout = onLogout,
+                        onClose = { isInfoTabVisible = false },
+                        client = client // Pass the HttpClient for API calls
+                    )
+                }
             }
         }
     }

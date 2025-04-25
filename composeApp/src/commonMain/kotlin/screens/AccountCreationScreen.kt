@@ -1,6 +1,6 @@
 package screens
 
-import utilities.isEmail
+import utilities.*
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,20 +34,20 @@ fun AccountCreationScreen(
 
     fun validateInput(): Boolean {
         // Username Rules: At least 5 characters excluding special characters
-        if (username.length < 5 || !username.matches(Regex("^[A-Za-z0-9_]*$"))) {
+        if (validateUsername(username)) {
             message = "Username must be atleast 5 characters long and contain only letters, numbers, and underscores"
             return false
         }
 
         // More password rules will be added
         // Password Rules: 8-20 characters excluding spaces
-        if (password.length < 8 || password.length > 20 || password.contains(" ")) {
+        if (validatePassword(password)) {
             message = "Password must be 8-20 characters long"
             return false
         }
 
         // Check if the email is valid
-        if (isEmail(email).not()) {
+        if (validateEmail(email)) {
             message = "Invalid email address"
             return false
         }

@@ -1,5 +1,5 @@
 package httpRequests
-import utilities.isEmail
+import utilities.validateEmail
 
 
 import io.ktor.client.*
@@ -17,7 +17,7 @@ suspend fun loginUser(client: HttpClient, identifier: String, password: String):
     println("Login request: $identifier")
     try {
         // Send the login request to the server
-        val authRequest: AuthRequest = if (isEmail(identifier)) { // email was entered
+        val authRequest: AuthRequest = if (validateEmail(identifier)) { // email was entered
             AuthRequest(
                 password = password,
                 email = identifier
