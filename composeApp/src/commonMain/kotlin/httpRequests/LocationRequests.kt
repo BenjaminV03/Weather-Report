@@ -12,7 +12,8 @@ data class NominatimResponse(
 
 @Serializable
 data class Address(
-    val city: String? = null,
+    val town: String? = "",
+    val city: String? = "",
     val county: String? = null,
     val state: String? = null,
     val country: String? = null,
@@ -35,6 +36,7 @@ suspend fun getLocationFromCoordinatesNominatim(client: HttpClient, latitude: Do
     return try {
         val parsedResponse: NominatimResponse = client.get(url).body()
         val location =
+            parsedResponse.address?.town.toString() + ", " +
             parsedResponse.address?.city.toString() + ", " +
             parsedResponse.address?.county.toString() + ", " +
             parsedResponse.address?.state.toString() + ", " +

@@ -1,0 +1,25 @@
+{
+    "baseurl": "http://143.60.74.84:55079",
+    "authEndpoints": {
+        "login": "/api/auth/login",
+        "register": "/api/auth/register",
+        "verifyToken": "/api/auth/verify-token",
+        "extractUserInfo": "/api/auth/extract-user-info"
+    },
+    "userEndpoints": {
+        "findByEmail": "/api/users/email/{email}",
+        "findByUsername": "/api/users/{username}",
+        "updatePassword": "/api/users/{userId}/update-password",
+        "updateEmail": "/api/users/{userId}/update-email"
+    },
+    "reportEndpoints": {
+        "createReport": "/api/reports",
+        "fetchFile": "/api/reports/{reportId}/files/{fileName}",
+        "fetchFileNames": "/api/reports/{reportId}/files",
+        "getReportByGroup": "/api/reports/group/{groupName}",
+        "updateReport": "/api/reports/{reportId}",
+        "deleteReport": "/api/reports/{reportId}",
+        "getAllReports": "/api/reports"
+    }
+
+}

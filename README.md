@@ -6,5 +6,7 @@ Main collaborators:
   Lead Programmer: Benjamin Vipperman
   Software Engineer: Chaison Vang
 
-
+Config File needs to be placed in these locations:
+  composeApp/src/androidMain/assets/
+  composeApp/src/androidMain/res/raw/
   
