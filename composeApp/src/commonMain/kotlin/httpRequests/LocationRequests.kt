@@ -35,13 +35,16 @@ suspend fun getLocationFromCoordinatesNominatim(client: HttpClient, latitude: Do
     val url = "https://nominatim.openstreetmap.org/reverse?format=json&lat=$latitude&lon=$longitude"
     return try {
         val parsedResponse: NominatimResponse = client.get(url).body()
+        val townOrCity = when {
+            !parsedResponse.address?.city.isNullOrEmpty() -> parsedResponse.address?.city + ", "
+            !parsedResponse.address?.town.isNullOrEmpty() -> parsedResponse.address?.town + ", "
+            else -> ""
+        }
         val location =
-            parsedResponse.address?.town.toString() + ", " +
-            parsedResponse.address?.city.toString() + ", " +
+            townOrCity +
             parsedResponse.address?.county.toString() + ", " +
             parsedResponse.address?.state.toString() + ", " +
             parsedResponse.address?.country.toString()
-        println("Location: $location")
         location.ifEmpty { "Unknown location" }
     } catch (e: Exception) {
         println("Error fetching location: ${e.message}")
