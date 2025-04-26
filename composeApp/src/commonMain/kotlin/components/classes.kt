@@ -23,5 +23,8 @@ data class Report(
     var author: String = "",
     var groupName: String = "",
     var content: String = "",
+    // locations for reports dont need to ever be null since a report has to be created with a location
+    var reportLat: Double,
+    var reportLon: Double,
     val createdDate: String? = null // null to allows optional creation date
 )

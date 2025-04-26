@@ -10,6 +10,9 @@ import com.russhwolf.settings.Settings
 import io.ktor.client.call.*
 import kotlinx.serialization.Serializable
 
+val authEndpoints = config.authEndpoints
+
+
 // these functions are used to communicate auth requests to the spring backend
 
 // login request
@@ -28,7 +31,7 @@ suspend fun loginUser(client: HttpClient, identifier: String, password: String):
                 password = password
             )
         }
-        val response: HttpResponse = client.post("$baseurl/api/auth/login") {
+        val response: HttpResponse = client.post("$baseurl${authEndpoints.login}") {
             contentType(ContentType.Application.Json)
             setBody(authRequest)
         }
@@ -49,11 +52,10 @@ suspend fun loginUser(client: HttpClient, identifier: String, password: String):
 
 // register request
 suspend fun registerUser(client: HttpClient, username: String, password: String, email: String): HttpStatusCode {
-    val response: HttpResponse = client.post("$baseurl/api/auth/register") {
+    val response: HttpResponse = client.post("$baseurl${authEndpoints.register}") {
         contentType(ContentType.Application.Json)
         setBody(AuthRequest(username, password, email))
     }
-    println(response)
     if (response.status == HttpStatusCode.OK) {
         val authToken = response.bodyAsText()
         Settings().putString("authToken", authToken)
@@ -70,7 +72,7 @@ suspend fun validateToken(client: HttpClient): Boolean {
     val token = Settings().getStringOrNull("authToken") ?: return false
     println("Validating token...")
     return try {
-        val response: HttpResponse = client.post("$baseurl/api/auth/verify-token") {
+        val response: HttpResponse = client.post("$baseurl${authEndpoints.verifyToken}") {
             header("Authorization", "Bearer $token")
         }
         println("Token validation successful: ${response.status}")
@@ -85,16 +87,13 @@ suspend fun validateToken(client: HttpClient): Boolean {
 suspend fun extractUserInfo(client: HttpClient): UserInfoResponse? {
     println("Extracting user info...")
     val token = Settings().getStringOrNull("authToken") ?: return null
-    println("Token: $token")
     return try {
-        val response: HttpResponse = client.post("$baseurl/api/auth/extract-user-info") {
+        val response: HttpResponse = client.post("$baseurl${authEndpoints.extractUserInfo}") {
             header("Authorization", "Bearer $token")
         }
-        println(response)
         if (response.status == HttpStatusCode.OK) {
             // Parse the response body as a map
             val userInfo = response.body<UserInfoResponse>()
-            println("Extracted user info: $userInfo")
             userInfo
         } else {
             println("Failed to extract user info: ${response.status.description}")

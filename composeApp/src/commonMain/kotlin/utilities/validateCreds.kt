@@ -3,7 +3,7 @@ package utilities
 // Username Rules: At least 5 characters excluding special characters
 fun validateUsername(username: String): Boolean { // returns true if valid, false if not
     if (username.isBlank()) return false
-    return (username.length >= 5 && username.matches(Regex("^[A-Za-z0-9_]*$")))
+    return (username.length in 5..20 && username.matches(Regex("^[A-Za-z0-9]*$")))
 }
 
 // Password Rules: 8 to 20 characters, no spaces

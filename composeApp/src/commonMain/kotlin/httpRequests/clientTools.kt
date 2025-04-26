@@ -1,27 +1,40 @@
 package httpRequests
 
+import components.Config
+
+import com.russhwolf.settings.Settings
 import io.ktor.client.*
 import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.kotlinx.json.*
 import kotlinx.serialization.json.Json
-import com.russhwolf.settings.Settings
+import org.example.project.readConfigFile
+import java.security.cert.X509Certificate
+import javax.net.ssl.X509TrustManager
 
-var baseurl = "http://10.0.0.100:8080"
+var config: Config = readConfigFile("config.json").let { Json.decodeFromString(it) }
+var baseurl = config.baseurl
 
 // creates the client to the web service
 fun getClient(): HttpClient {
-    val client = HttpClient(CIO) {
+    return HttpClient(CIO) {
         install(ContentNegotiation) {
-            json( Json {
-                ignoreUnknownKeys = true // ignore extar fields in the json responce
-                prettyPrint = true // debugging
-                isLenient = true // lenient parsing
+            json(Json {
+                ignoreUnknownKeys = true // Ignore extra fields in the JSON response
+                prettyPrint = true // Debugging
+                isLenient = true // Lenient parsing
             })
         }
+        engine {
+            https {
+                trustManager = object : X509TrustManager {
+                    override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+                    override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+                    override fun getAcceptedIssuers(): Array<X509Certificate>? = null
+                }
+            }
+        }
     }
-
-    return client
 }
 
 // grabs the clients token if it exists

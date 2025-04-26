@@ -1,8 +1,5 @@
-import org.jetbrains.compose.desktop.application.dsl.TargetFormat
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
-import org.jetbrains.kotlin.gradle.ExperimentalWasmDsl
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
 
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
@@ -14,6 +11,7 @@ plugins {
 
 dependencies {
     implementation(libs.androidx.material3.android)
+    implementation(libs.transport.runtime)
     debugImplementation(compose.uiTooling)
     implementation(libs.okio)
 }
@@ -26,9 +24,13 @@ repositories {
 
 kotlin {
     androidTarget {
-        @OptIn(ExperimentalKotlinGradlePluginApi::class)
         compilerOptions {
             jvmTarget.set(JvmTarget.JVM_17)
+        }
+    }
+    sourceSets {
+        val commonMain by getting {
+            resources.srcDir("src/commonMain/resources")
         }
     }
 
@@ -58,6 +60,9 @@ kotlin {
             implementation("androidx.media3:media3-ui:1.4.1")
             implementation("androidx.media3:media3-exoplayer:1.4.1")
             implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+            implementation("com.google.android.gms:play-services-location:21.3.0")
+
+
         }
         androidMain.dependencies {
             implementation(compose.preview)

@@ -9,11 +9,14 @@ import io.ktor.client.*
 import io.ktor.client.statement.*
 import java.util.*
 
+val userEndpoints = config.userEndpoints
+
 // these functions are used to access user data from the web servive via requsets handled by spring
 
 // find user by email
 suspend fun findUserByEmail(client: HttpClient, email : String): User {
-    val user: User = client.get("$baseurl/api/users/email/$email"){
+    val url = baseurl + userEndpoints.findByEmail.replace("{email}", email)
+    val user: User = client.get(url){
         accept(ContentType.Application.Json)
         header("Authorization", "Bearer ${getAuthToken()}")
     }.body()
@@ -22,8 +25,9 @@ suspend fun findUserByEmail(client: HttpClient, email : String): User {
 
 // Find user by username
 suspend fun findUserByUsername(client: HttpClient, username: String): User {
+    val url = baseurl + userEndpoints.findByUsername.replace("{username}", username)
     println("Grabbing username from server")
-    val user: User = client.get("$baseurl/api/users/$username") {
+    val user: User = client.get(url) {
         accept(ContentType.Application.Json)
         header("Authorization", "Bearer ${getAuthToken()}")
     }.body()
@@ -32,8 +36,9 @@ suspend fun findUserByUsername(client: HttpClient, username: String): User {
 
 // Update user password
 suspend fun updatePassword(client: HttpClient, userId: UUID, oldPassword: String, newPassword: String): Result<String> {
+    val url = baseurl + userEndpoints.updatePassword.replace("{userId}", userId.toString())
     return try {
-        val response = client.put("$baseurl/api/users/$userId/update-password") {
+        val response = client.put(url) {
             contentType(ContentType.Application.Json)
             header("Authorization", "Bearer ${getAuthToken()}")
             setBody(
@@ -57,8 +62,9 @@ suspend fun updatePassword(client: HttpClient, userId: UUID, oldPassword: String
 
 // Update email
 suspend fun updateEmail(client: HttpClient, userId: UUID, newEmail: String): Result<String> {
+    val url = baseurl + userEndpoints.updateEmail.replace("{userId}", userId.toString())
     return try {
-        val response = client.put("$baseurl/api/users/$userId/update-email") {
+        val response = client.put(url) {
             contentType(ContentType.Application.Json)
             header("Authorization", "Bearer ${getAuthToken()}")
             setBody(
