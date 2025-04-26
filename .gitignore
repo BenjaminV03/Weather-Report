@@ -6,3 +6,5 @@ build/
 .idea/
 .fleet/
 kotlin-js-store/
+composeApp/src/androidMain/res/raw/config.json
+composeApp/src/androidMain/assets/config.json

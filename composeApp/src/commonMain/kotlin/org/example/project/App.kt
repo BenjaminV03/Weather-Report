@@ -24,6 +24,7 @@ enum class Screen {
 fun App() {
     var currentScreen: Screen by remember { mutableStateOf(Screen.LOGIN) }
     var user: String? by remember { mutableStateOf(null) }
+    var roles: List<String>? by remember { mutableStateOf(null) }
     var reportList by remember { mutableStateOf<List<Report>>(emptyList()) }
     var isDataFetched by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
@@ -42,6 +43,7 @@ fun App() {
             val userInfo = extractUserInfo(client)
             if (userInfo != null) {
                 user = userInfo.username
+                roles = userInfo.roles
                 currentScreen = Screen.HOMEPAGE
             } else {
                 println("Invalid or no token")
@@ -66,7 +68,6 @@ fun App() {
                     val fetchedReports = getAllReports(client)
                     withContext(Dispatchers.Main) {
                         reportList = fetchedReports
-                        println("Fetched reports: $fetchedReports")
                         isDataFetched = true
                         errorMessage = null
                     }
@@ -119,6 +120,7 @@ fun App() {
             } else {
                 HomeScreen(
                     user = user,
+                    roles = roles,
                     onLogout = {
                         println("Logged out")
                         user = null

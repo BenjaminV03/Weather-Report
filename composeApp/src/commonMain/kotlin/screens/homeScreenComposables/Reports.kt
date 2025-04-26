@@ -10,6 +10,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import components.Report
 import httpRequests.fetchFileNames
+import httpRequests.getLocationFromCoordinatesNominatim
 import httpRequests.updateReport
 import io.ktor.client.*
 import kotlinx.coroutines.launch
@@ -31,6 +32,12 @@ fun Reports(
     val coroutineScope = rememberCoroutineScope()
     val createdDateTimeISO = parseIsoDate(report.createdDate)
     val createdDateTime = formatDateTime(createdDateTimeISO)
+    var location by remember { mutableStateOf("") }
+    coroutineScope.launch {
+        location = getLocationFromCoordinatesNominatim(client, report.reportLat, report.reportLon)
+    }
+
+
 
     // Check if the report is editable (within 5 minutes of creation)
     val isEditable = remember(report.createdDate) {
@@ -86,6 +93,7 @@ fun Reports(
 
             Spacer(modifier = Modifier.height(8.dp))
 
+            Text(text = location, style = MaterialTheme.typography.caption)
             // Display the created date
             if (createdDateTime != null) {
                 Text(text = createdDateTime, style = MaterialTheme.typography.caption)

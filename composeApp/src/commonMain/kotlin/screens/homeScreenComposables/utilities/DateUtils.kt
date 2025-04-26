@@ -29,7 +29,5 @@ fun formatDateTime(date: Date?): String? {
 fun isWithinLastMinutes(date: Date?, minutes: Long): Boolean {
     val currentTime = System.currentTimeMillis()
     val duration = currentTime - (date?.time ?: 0)
-    println("Current time: $currentTime")
-    println("Duration: $duration")
     return duration <= minutes * 60 * 1000
 }

@@ -22,6 +22,9 @@ fun AddReportOverlay(
     onDismiss: () -> Unit,
     onAddReport: () -> Unit,
     user : String?,
+    roles: List<String>?,
+    userLocation: Pair<Double, Double>,
+    selectedTab: String,
     client: HttpClient
 ) {
     val coroutineScope = rememberCoroutineScope() // Fixed typo
@@ -89,20 +92,39 @@ fun AddReportOverlay(
                     Button(
                         onClick = {
                             if (content.isNotBlank()) {
-                                // Create a new report with media attachments
-                                val newReport = Report(
-                                    id = null, // Set the ID to null since the server will generate one
-                                    author = user.toString(), // Set the author of the report
-                                    content = content, // Set the content of the report
-                                    groupName = "local" // Set the group name of the report
-                                )
 
-                                coroutineScope.launch {
-                                    try {
-                                        postReport(client, newReport, selectedFiles)
-                                        onAddReport()
-                                    } catch (e: Exception) {
-                                        println("Error adding report: ${e.message}")
+                                val groupName = when (selectedTab) {
+                                    "local" -> "local"
+                                    "state" -> {
+                                        val stateRolePattern = Regex("STATE_(\\w+)")
+                                        val stateRole = roles?.firstOrNull { it.matches(stateRolePattern) }
+                                        stateRole?.let { stateRolePattern.find(it)?.groupValues?.get(1) } ?: "unknown_state"
+                                    }
+                                    "national" -> "national"
+                                    else -> "unknown"
+                                }
+                                if (groupName == "unknown" || groupName == "unknown_state") {
+
+                                    onAddReport() // exit the report screen
+                                } else {
+
+                                    // Create a new report with media attachments
+                                    val newReport = Report(
+                                        id = null, // Set the ID to null since the server will generate one
+                                        author = user.toString(), // Set the author of the report
+                                        content = content, // Set the content of the report
+                                        groupName = groupName, // Set the group name of the report
+                                        reportLat = userLocation.first, // Set the latitude of the report
+                                        reportLon = userLocation.second, // Set the longitude of the report
+                                        )
+
+                                    coroutineScope.launch {
+                                        try {
+                                            postReport(client, newReport, selectedFiles)
+                                            onAddReport()
+                                        } catch (e: Exception) {
+                                            println("Error adding report: ${e.message}")
+                                        }
                                     }
                                 }
                             }

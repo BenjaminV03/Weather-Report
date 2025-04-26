@@ -34,20 +34,20 @@ fun AccountCreationScreen(
 
     fun validateInput(): Boolean {
         // Username Rules: At least 5 characters excluding special characters
-        if (validateUsername(username)) {
+        if (!validateUsername(username)) {
             message = "Username must be atleast 5 characters long and contain only letters, numbers, and underscores"
             return false
         }
 
         // More password rules will be added
         // Password Rules: 8-20 characters excluding spaces
-        if (validatePassword(password)) {
+        if (!validatePassword(password)) {
             message = "Password must be 8-20 characters long"
             return false
         }
 
         // Check if the email is valid
-        if (validateEmail(email)) {
+        if (!validateEmail(email)) {
             message = "Invalid email address"
             return false
         }

@@ -14,12 +14,15 @@ import kotlinx.serialization.json.Json
 import java.io.File
 import java.util.*
 
+val reportEndpoints = config.reportEndpoints
+
 // these functions are used to access report data from the web servive via requsets handled by spring
 
 // create a report
 suspend fun postReport(client: HttpClient, report: Report, files: List<File>) {
+    val url = baseurl + reportEndpoints.createReport
     client.submitFormWithBinaryData(
-        url = "$baseurl/api/reports",
+        url = url,
         formData = formData {
             // Add the Report object as JSON
             append("report", Json.encodeToString(report), Headers.build {
@@ -59,24 +62,26 @@ suspend fun postReport(client: HttpClient, report: Report, files: List<File>) {
 
 // grab a file from the server
 suspend fun fetchFile(client: HttpClient, reportId: UUID, fileName: String): ByteArray {
-    println("File being grabbed")
-    return client.get("$baseurl/api/reports/$reportId/files/$fileName") {
+    val url = baseurl + reportEndpoints.fetchFile
+        .replace("{reportId}", reportId.toString())
+        .replace("{fileName}", fileName)
+    return client.get(url) {
         header("Authorization", "Bearer ${getAuthToken()}")
     }.body()
 }
 
 suspend fun fetchFileNames(client: HttpClient, reportId: UUID): List<String> {
-    println("File Names being grabbed")
-    return client.get("$baseurl/api/reports/$reportId/files"){
+    val url = baseurl + reportEndpoints.fetchFileNames.replace("{reportId}", reportId.toString())
+    return client.get(url){
         header("Authorization", "Bearer ${getAuthToken()}")
     }.body()
 }
 
 // grab a report by group
 suspend fun getReportByGroup(client: HttpClient, groupName: String): List<Report> {
-
+    val url = baseurl + reportEndpoints.getReportByGroup.replace("{groupName}", groupName)
     try {
-        val reports: List<Report> = client.get("$baseurl/api/reports/group/$groupName"){
+        val reports: List<Report> = client.get(url){
             accept(ContentType.Application.Json)
             header("Authorization", "Bearer ${getAuthToken()}")
         }.body()
@@ -87,11 +92,12 @@ suspend fun getReportByGroup(client: HttpClient, groupName: String): List<Report
         println("Failed to retrieve report: ${e.message}")
         return emptyList()
     }
-
 }
+
 // update a report
 suspend fun updateReport(client: HttpClient, report: Report) {
-    client.put("$baseurl/api/reports/${report.id}") {
+    val url = baseurl + reportEndpoints.updateReport.replace("{reportId}", report.id.toString())
+    client.put(url) {
         contentType(ContentType.Application.Json) // set type to Json
         setBody(report) // set body of Json as report object
         header("Authorization", "Bearer ${getAuthToken()}") // add auth token to header
@@ -105,7 +111,8 @@ suspend fun updateReport(client: HttpClient, report: Report) {
 
 // delete a report
 suspend fun deleteReport(client: HttpClient, id: UUID?) {
-    client.delete("$baseurl/api/reports/$id"){
+    val url = baseurl + reportEndpoints.deleteReport.replace("{reportId}", id.toString())
+    client.delete(url){
         header("Authorization", "Bearer ${getAuthToken()}")
     }.body<HttpResponse>().let { response ->
         when (response.status) {
@@ -120,7 +127,8 @@ suspend fun deleteReport(client: HttpClient, id: UUID?) {
 
 // grab all reports
 suspend fun getAllReports(client: HttpClient): List<Report> {
-    return client.get("$baseurl/api/reports"){
+    val url = baseurl + reportEndpoints.getAllReports
+    return client.get(url){
         accept(ContentType.Application.Json)
         header("Authorization", "Bearer ${getAuthToken()}")
     }.body()
