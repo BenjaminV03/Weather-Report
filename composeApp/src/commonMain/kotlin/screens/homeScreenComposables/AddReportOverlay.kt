@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import io.ktor.client.*
 import kotlinx.coroutines.launch
 import java.io.File
+import java.util.*
 
 @Composable
 fun AddReportOverlay(
@@ -94,17 +95,18 @@ fun AddReportOverlay(
                             if (content.isNotBlank()) {
 
                                 val groupName = when (selectedTab) {
-                                    "local" -> "local"
-                                    "state" -> {
+                                    "Local" -> "local"
+                                    "State" -> {
                                         val stateRolePattern = Regex("STATE_(\\w+)")
                                         val stateRole = roles?.firstOrNull { it.matches(stateRolePattern) }
                                         stateRole?.let { stateRolePattern.find(it)?.groupValues?.get(1) } ?: "unknown_state"
                                     }
-                                    "national" -> "national"
+                                    "National" -> "national"
                                     else -> "unknown"
                                 }
+                                groupName.lowercase(Locale.getDefault())
                                 if (groupName == "unknown" || groupName == "unknown_state") {
-
+                                    println("Unable to determine groupname")
                                     onAddReport() // exit the report screen
                                 } else {
 

@@ -1,5 +1,6 @@
 package httpRequests
 
+import androidx.compose.ui.text.toLowerCase
 import components.Report
 import screens.homeScreenComposables.utilities.getMimeType
 
@@ -79,7 +80,9 @@ suspend fun fetchFileNames(client: HttpClient, reportId: UUID): List<String> {
 
 // grab a report by group
 suspend fun getReportByGroup(client: HttpClient, groupName: String): List<Report> {
-    val url = baseurl + reportEndpoints.getReportByGroup.replace("{groupName}", groupName)
+    val url = baseurl + reportEndpoints.getReportByGroup.replace("{groupName}",
+        groupName.lowercase(Locale.getDefault())
+    )
     try {
         val reports: List<Report> = client.get(url){
             accept(ContentType.Application.Json)

@@ -25,6 +25,7 @@ import kotlinx.coroutines.launch
 import io.ktor.client.HttpClient
 import screens.homeScreenComposables.BottomNavigationBar
 import screens.homeScreenComposables.utilities.LocationService
+import java.util.*
 
 
 enum class TabType {
@@ -114,7 +115,7 @@ fun HomeScreen(
                             selectedStates // Copy over selected states if user's state is already included
                         }
                         userStates.flatMap { state ->
-                                getReportByGroup(client, state) // Fetch reports for each state
+                            getReportByGroup(client, state) // Fetch reports for each state
                         }
                     }
                     TabType.National -> getReportByGroup(client, "national")
