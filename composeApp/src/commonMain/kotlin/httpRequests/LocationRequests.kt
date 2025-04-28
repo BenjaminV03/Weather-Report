@@ -40,11 +40,10 @@ suspend fun getLocationFromCoordinatesNominatim(client: HttpClient, latitude: Do
             !parsedResponse.address?.town.isNullOrEmpty() -> parsedResponse.address?.town + ", "
             else -> ""
         }
-        val location =
-            townOrCity +
-            parsedResponse.address?.county.toString() + ", " +
-            parsedResponse.address?.state.toString() + ", " +
-            parsedResponse.address?.country.toString()
+        val county = parsedResponse.address?.county.isNullOrEmpty().let { if (it) "" else parsedResponse.address?.county + ", "}
+        val state = parsedResponse.address?.state.isNullOrEmpty().let { if (it) "" else parsedResponse.address?.state + ", "}
+        val country = parsedResponse.address?.country.isNullOrEmpty().let { if (it) "" else parsedResponse.address?.country }
+        val location = townOrCity + county + state + country
         location.ifEmpty { "Unknown location" }
     } catch (e: Exception) {
         println("Error fetching location: ${e.message}")

@@ -1,6 +1,7 @@
 // This will be the main homepage/dashboard that a user will see upon logging in
 package screens
 
+import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
@@ -14,6 +15,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.platform.LocalContext
 import com.russhwolf.settings.Settings
+import components.LocationPermissionDialog
 import screens.homeScreenComposables.*
 import httpRequests.getReportByGroup
 import httpRequests.deleteReport
@@ -23,10 +25,9 @@ import httpRequests.findUserByUsername
 import httpRequests.getStateFromCoordinatesNominatim
 import kotlinx.coroutines.launch
 import io.ktor.client.HttpClient
+import kotlinx.coroutines.delay
 import screens.homeScreenComposables.BottomNavigationBar
 import screens.homeScreenComposables.utilities.LocationService
-import java.util.*
-
 
 enum class TabType {
     Local,
@@ -67,13 +68,14 @@ fun HomeScreen(
     var isOverlayVisible by remember { mutableStateOf(false) } // State to control overlay visibility
     var isInfoTabVisible by remember { mutableStateOf(false) } // State to control info tab visibility
     var isLocationAvailable by remember { mutableStateOf(false) } // Check if location is available
+    var isLocationDialogVisable by remember { mutableStateOf(false) } // Check if location permission dialog is visible
 
 
     val coroutineScope = rememberCoroutineScope()
 
     var userLocation by remember { mutableStateOf<Pair<Double, Double>?>(null) }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(Unit) { // check for user location on launch and grab selected states
         selectedStates = Settings().getString("selectedStates", "").split(",")
         coroutineScope.launch {
             try {
@@ -84,6 +86,7 @@ fun HomeScreen(
                     // Call a suspend function to fetch user's state from coordinates
                     userState = getStateFromCoordinatesNominatim(client, location.first, location.second)
                 } else {
+                    isLocationDialogVisable = true
                     println("Failed to fetch user's location")
                 }
             } catch (e: Exception) {
@@ -92,6 +95,27 @@ fun HomeScreen(
             }
         }
     }
+
+    LaunchedEffect(Unit) { // check users location every 10 seconds
+        while (true) {
+            coroutineScope.launch {
+                try {
+                    val location = locationService.getCurrentLocation()
+                    if (location != null) { // can grab users location
+                        isLocationAvailable = true
+                        userLocation = location
+
+                    }
+                } catch (e: Exception) {
+                    println("Error fetching location: ${e.message}")
+                    isLocationAvailable = false
+                }
+
+            }
+            delay(10000) // delay for 10 seconds
+        }
+    }
+
 
     // Function to refresh reports for the selected tab
     val refreshReports: () -> Unit = {
@@ -267,6 +291,18 @@ fun HomeScreen(
                         client = client // Pass the HttpClient for API calls
                     )
                 }
+            }
+
+            // Pop to ask for permission to use location services
+            if (isLocationDialogVisable) {
+                LocationPermissionDialog(
+                    onDismiss = { isLocationDialogVisable  = false},
+                    onEnableLocation = {
+                        // Logic to enable location sharing
+                        val intent = Intent(android.provider.Settings.ACTION_LOCATION_SOURCE_SETTINGS)
+                        context.startActivity(intent)
+                    }
+                )
             }
         }
     }
