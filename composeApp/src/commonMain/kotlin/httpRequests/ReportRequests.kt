@@ -1,6 +1,5 @@
 package httpRequests
 
-import androidx.compose.ui.text.toLowerCase
 import components.Report
 import screens.homeScreenComposables.utilities.getMimeType
 
@@ -20,7 +19,7 @@ val reportEndpoints = config.reportEndpoints
 // these functions are used to access report data from the web servive via requsets handled by spring
 
 // create a report
-suspend fun postReport(client: HttpClient, report: Report, files: List<File>) {
+suspend fun postReport(client: HttpClient, report: Report, files: List<File>): HttpStatusCode {
     val url = baseurl + reportEndpoints.createReport
     client.submitFormWithBinaryData(
         url = url,
@@ -34,7 +33,7 @@ suspend fun postReport(client: HttpClient, report: Report, files: List<File>) {
             if (files.isNotEmpty()) {
                 files.forEach { file ->
                     val sanitizedFileName = file.name.replace("[^a-zA-Z0-9._-]".toRegex(), "_")
-                    val mimeType = file.getMimeType() ?: "application/octet-stream"
+                    val mimeType = file.getMimeType()
                     append(
                         "files",
                         file.readBytes(),
@@ -44,7 +43,6 @@ suspend fun postReport(client: HttpClient, report: Report, files: List<File>) {
                             append(HttpHeaders.ContentType, mimeType)
                         }
                     )
-                    println("Uploading file: $sanitizedFileName, MIME type: $mimeType")
                 }
             }
         }
@@ -52,10 +50,13 @@ suspend fun postReport(client: HttpClient, report: Report, files: List<File>) {
         header("Authorization", "Bearer ${getAuthToken()}") // Add auth token to header
     }.let { response ->
         when (response.status) {
-            HttpStatusCode.OK -> println("Report created successfully")
+            HttpStatusCode.OK -> {
+                println("Report created successfully")
+                return response.status
+            }
             else -> {
                 println("Failed to create report: ${response.status}")
-                throw Exception(response.status.description)
+                return response.status
             }
         }
     }
@@ -79,8 +80,8 @@ suspend fun fetchFileNames(client: HttpClient, reportId: UUID): List<String> {
 }
 
 // grab a report by group
-suspend fun getReportByGroup(client: HttpClient, groupName: String): List<Report> {
-    val url = baseurl + reportEndpoints.getReportByGroup.replace("{groupName}",
+suspend fun getReportsByGroup(client: HttpClient, groupName: String): List<Report> {
+    val url = baseurl + reportEndpoints.getReportsByGroup.replace("{groupName}",
         groupName.lowercase(Locale.getDefault())
     )
     try {
@@ -94,6 +95,23 @@ suspend fun getReportByGroup(client: HttpClient, groupName: String): List<Report
     } catch (e: Exception) {
         println("Failed to retrieve report: ${e.message}")
         return emptyList()
+    }
+}
+
+suspend fun getReportsByGroups(client: HttpClient, groupNames: List<String>): List<Report> {
+    val url = baseurl + reportEndpoints.getReportsByGroups
+    return try {
+        val reports: List<Report> = client.get(url) {
+            accept(ContentType.Application.Json)
+            url {
+                parameters.appendAll("groupNames", groupNames) // Add group names as query parameters
+            }
+            header("Authorization", "Bearer ${getAuthToken()}") // add auth token to header
+        }.body()
+        reports
+    } catch (e: Exception) {
+        println("Failed to retrieve reports: ${e.message}")
+        emptyList()
     }
 }
 

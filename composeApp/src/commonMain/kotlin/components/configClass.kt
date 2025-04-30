@@ -34,7 +34,8 @@ data class ReportEndpoints(
     val createReport: String,
     val fetchFile: String,
     val fetchFileNames: String,
-    val getReportByGroup: String,
+    val getReportsByGroup: String,
+    val getReportsByGroups: String,
     val updateReport: String,
     val deleteReport: String,
     val getAllReports: String

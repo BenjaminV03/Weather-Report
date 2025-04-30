@@ -66,7 +66,7 @@ fun LoginScreen(
                         }
 
                     }
-                    HttpStatusCode.Forbidden -> {
+                    HttpStatusCode.Unauthorized -> {
                         errorMessage = "Invalid username or password"
                     }
                     else -> {

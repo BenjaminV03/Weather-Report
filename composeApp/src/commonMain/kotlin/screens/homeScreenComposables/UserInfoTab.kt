@@ -103,9 +103,14 @@ fun UserInfoTab(
                     // Dropdown multi-select for modifying states
                     Box {
                         var expanded by remember { mutableStateOf(false) }
-                        Text("Modify Selected States", style = MaterialTheme.typography.subtitle1)
-                        IconButton(onClick = { expanded = !expanded }, ) {
-                            Icon(Icons.Default.Menu , contentDescription = "Select States")
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically, // Align items vertically in the center
+                            horizontalArrangement = Arrangement.spacedBy(8.dp) // Add spacing between items
+                        ) {
+                            Text("Modify Selected States", style = MaterialTheme.typography.subtitle1)
+                            IconButton(onClick = { expanded = !expanded }) {
+                                Icon(Icons.Default.Menu, contentDescription = "Select States")
+                            }
                         }
                         DropdownMenu(
                             expanded = expanded,

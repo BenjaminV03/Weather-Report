@@ -17,17 +17,15 @@ import androidx.compose.ui.platform.LocalContext
 import com.russhwolf.settings.Settings
 import components.LocationPermissionDialog
 import screens.homeScreenComposables.*
-import httpRequests.getReportByGroup
-import httpRequests.deleteReport
 import components.Report
 import components.User
-import httpRequests.findUserByUsername
-import httpRequests.getStateFromCoordinatesNominatim
+import httpRequests.*
 import kotlinx.coroutines.launch
 import io.ktor.client.HttpClient
 import kotlinx.coroutines.delay
 import screens.homeScreenComposables.BottomNavigationBar
 import screens.homeScreenComposables.utilities.LocationService
+import java.util.*
 
 enum class TabType {
     Local,
@@ -50,7 +48,6 @@ fun HomeScreen(
     val context = LocalContext.current
     val locationService = remember { LocationService(context) }
 
-    var reports by remember { mutableStateOf(emptyList<Report>()) }
     var selectedTab by remember { mutableStateOf(TabType.Local) }
     val cachedReports = remember { mutableStateMapOf<TabType, List<Report>>() }
     var userState by remember {mutableStateOf("")}
@@ -60,9 +57,10 @@ fun HomeScreen(
     if (selectedStates.isEmpty()) {
         Settings().putString("selectedStates", "")
     }
-    val stateRolePattern = Regex("STATE_(\\w+)") // Pattern to match STATE_{STATE_NAME}
-    val stateRole = roles?.firstOrNull { it.matches(stateRolePattern) } // Find the first valid state role
-    val stateName = stateRole?.let { stateRolePattern.find(it)?.groupValues?.get(1) } // Extract the state name
+    val stateNames = roles?.filter { it.startsWith("STATE_") } // Only grab state names from roles
+        ?.map { it.substringAfter("STATE_").lowercase(Locale.ROOT) }
+        ?: emptyList() // List of state names
+
 
 
     var isOverlayVisible by remember { mutableStateOf(false) } // State to control overlay visibility
@@ -97,55 +95,60 @@ fun HomeScreen(
     }
 
     LaunchedEffect(Unit) { // check users location every 10 seconds
-        while (true) {
-            coroutineScope.launch {
+        coroutineScope.launch {
+            var prevUserState = userState
+            while (true) {
                 try {
                     val location = locationService.getCurrentLocation()
+                    isLocationAvailable = location != null
                     if (location != null) { // can grab users location
-                        isLocationAvailable = true
                         userLocation = location
+                        prevUserState = userState
+                        userState = getStateFromCoordinatesNominatim(client, location.first, location.second)
 
                     }
                 } catch (e: Exception) {
                     println("Error fetching location: ${e.message}")
+                    userState = prevUserState // roll back to previous state
                     isLocationAvailable = false
                 }
-
+                delay(10000) // delay for 10 seconds
             }
-            delay(10000) // delay for 10 seconds
         }
     }
 
 
     // Function to refresh reports for the selected tab
     val refreshReports: () -> Unit = {
+        selectedStates = Settings().getString("selectedStates", "").split(",")
+        // check for user's selected states on refresh
         coroutineScope.launch {
             try {
-                val refreshedReports = when (selectedTab) {
-                    TabType.Local -> { // Display
-                        val allReports = getReportByGroup(client, "local")
-                        userLocation?.let { location ->
-                            allReports.filter { report ->
-                                val reportLat = report.reportLat
-                                val reportLon = report.reportLon
-                                locationService.calculateDistance(location.first, location.second, reportLat, reportLon) <= 25 // 20 km range
+                if (isLocationAvailable) { // Only refresh reports if location is available
+                    val refreshedReports = when (selectedTab) {
+                        TabType.Local -> { // Display
+                            val allReports = getReportsByGroup(client, "local")
+                            userLocation?.let { location ->
+                                allReports.filter { report ->
+                                    val reportLat = report.reportLat
+                                    val reportLon = report.reportLon
+                                    locationService.calculateDistance(location.first, location.second, reportLat, reportLon) <= 25 // 25 km range
+                                }
+                            } ?: allReports
+                        }
+                        TabType.State -> { // Display state reports based on user's state and selected states
+                            val userStates = if (!selectedStates.contains(userState)) {
+                                listOf(userState) + selectedStates // Add user's current state to selected states if not already included
+                            } else {
+                                selectedStates // Copy over selected states if user's state is already included
                             }
-                        } ?: allReports
-                    }
-                    TabType.State -> { // Display state reports based on user's state and selected states
-                        val userStates = if (!selectedStates.contains(userState)) {
-                            listOf(userState) + selectedStates // Add user's current state to selected states if not already included
-                        }else {
-                            selectedStates // Copy over selected states if user's state is already included
+                            getReportsByGroups(client, userStates)
                         }
-                        userStates.flatMap { state ->
-                            getReportByGroup(client, state) // Fetch reports for each state
-                        }
+                        TabType.National -> getReportsByGroup(client, "national")
                     }
-                    TabType.National -> getReportByGroup(client, "national")
+                    cachedReports[selectedTab] = refreshedReports
                 }
-                cachedReports[selectedTab] = refreshedReports
-                reports = refreshedReports
+
             } catch (e: Exception) {
                 println("Error refreshing reports: ${e.message}")
             }
@@ -181,7 +184,9 @@ fun HomeScreen(
 
 
     LaunchedEffect(selectedTab) {
-        refreshReports()
+        if (isLocationAvailable) { // Only show reports when location is available
+            refreshReports()
+        }
     }
 
     MaterialTheme(
@@ -219,7 +224,7 @@ fun HomeScreen(
                 floatingActionButton = {
                     if (
                         (selectedTab == TabType.Local) || // Local tab is always available
-                        (selectedTab == TabType.State && stateName != null) || // State tab is only available if the user has the state role
+                        (selectedTab == TabType.State && stateNames.isNotEmpty()) || // State tab is only available if the user has the state role
                         (selectedTab == TabType.National && roles?.contains("NATIONAL") == true) // National tab is only available if the user has the national role
                     ){
                         FloatingActionButton(
@@ -273,8 +278,9 @@ fun HomeScreen(
                             isOverlayVisible = false // Hide overlay after adding
                         },
                         user = user,
-                        roles = roles,
                         userLocation = it,
+                        stateNames = stateNames,
+                        userState = userState,
                         selectedTab = selectedTab.toString(),
                         client = client
                     )
